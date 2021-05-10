@@ -12,9 +12,12 @@ defmodule DslDashboard.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: DslDashboard.PubSub},
       # Start the Endpoint (http/https)
-      DslDashboardWeb.Endpoint
+      DslDashboardWeb.Endpoint,
       # Start a worker by calling: DslDashboard.Worker.start_link(arg)
       # {DslDashboard.Worker, arg}
+
+      DslDashboard.ExampleWatcher.Supervisor
+      
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
