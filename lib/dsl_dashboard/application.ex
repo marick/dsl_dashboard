@@ -16,14 +16,12 @@ defmodule DslDashboard.Application do
       # Start a worker by calling: DslDashboard.Worker.start_link(arg)
       # {DslDashboard.Worker, arg}
 
-      DslDashboard.ExampleWatcher.Supervisor
-      
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: DslDashboard.Supervisor]
-    Supervisor.start_link(children, opts) |> IO.inspect
+    Supervisor.start_link(children, opts)
   end
 
   # Tell Phoenix to update the endpoint configuration
