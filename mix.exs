@@ -20,7 +20,7 @@ defmodule DslDashboard.MixProject do
   def application do
     [
       mod: {DslDashboard.Application, []},
-      extra_applications: [:logger, :runtime_tools, :file_system]
+      extra_applications: [:logger, :runtime_tools]
     ]
   end
 
@@ -45,8 +45,17 @@ defmodule DslDashboard.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
 
-      {:file_system, "~> 0.2", only: :dev},
-      {:exsync, "~> 0.2", only: :dev}
+      # {:file_system, "~> 0.2", only: :dev},
+      {:exsync, "~> 0.2",
+       path: "/Users/bem/src/third-party/exsync"
+      },
+
+      {:ecto_test_dsl, "~> 0.1",
+       path: "/Users/bem/src/ecto_test_dsl"
+      },
+      
+
+      
     ]
   end
 
