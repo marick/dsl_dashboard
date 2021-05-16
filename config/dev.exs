@@ -61,6 +61,13 @@ config :logger, :console,
   format: "[$level] $message\n",
   level: :debug
 
+
+config :dsl_dashboard, 
+  compile_here: "/Users/bem/src/examples_for_ecto_test_dsl/associations",
+  src_dirs: ["/Users/bem/src/examples_for_ecto_test_dsl/associations/test"],
+  beam_dirs: ["/Users/bem/src/examples_for_ecto_test_dsl/associations/_build/test/lib/app/ebin/"],
+  load_first: true
+
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.
 config :phoenix, :stacktrace_depth, 20

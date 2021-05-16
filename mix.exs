@@ -45,10 +45,7 @@ defmodule DslDashboard.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
 
-      # {:file_system, "~> 0.2", only: :dev},
-      {:exsync, "~> 0.2",
-       path: "/Users/bem/src/third-party/exsync"
-      },
+      {:file_system, "~> 0.2"},
 
       {:ecto_test_dsl, "~> 0.1",
        path: "/Users/bem/src/ecto_test_dsl"
