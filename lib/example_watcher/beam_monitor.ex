@@ -76,12 +76,6 @@ defmodule DslDashboard.ExampleWatcher.BeamMonitor do
 
   def handle_info(:reload_complete, state) do
     Logger.debug("reload complete")
-
-    if callback = Config.reload_callback() do
-      {mod, fun, args} = callback
-      Task.start(mod, fun, args)
-    end
-
     {:noreply, state}
   end
 
@@ -146,12 +140,14 @@ defmodule DslDashboard.ExampleWatcher.BeamMonitor do
   end
 
   defp load_all_beam_files(dirs) do
+    Logger.debug("Initial load of all beam files.")
     Utils.all_beam_paths(dirs) |> load_modules
   end  
 
   defp load_modules(reload_set) do 
     Enum.each(reload_set, fn module_path ->
-      Utils.reload(module_path)
+      {:module, module} = Utils.reload(module_path)
+      Config.reload_callback.(module)
     end)
   end
 

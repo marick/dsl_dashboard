@@ -22,9 +22,7 @@ defmodule DslDashboard.ExampleWatcher.Utils do
     beam_path |> Path.basename(".beam") |> String.to_atom() |> unload
   end
 
-  # beam file path
   def reload(beam_path) do
-    Logger.debug("reload module #{Path.basename(beam_path, ".beam")}")
     file = beam_path |> to_charlist
     {:ok, binary, _} = :erl_prim_loader.get_file(file)
     module = beam_path |> Path.basename(".beam") |> String.to_atom()
