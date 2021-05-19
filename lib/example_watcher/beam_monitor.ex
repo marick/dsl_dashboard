@@ -7,13 +7,12 @@ defmodule DslDashboard.ExampleWatcher.BeamMonitor do
 
   defmodule State do
     @enforce_keys [
-      :finished_reloading_timer,
       :throttle_timer,
       :watcher_pid,
       :unload_set,
       :reload_set
     ]
-    defstruct [:finished_reloading_timer, :throttle_timer, :watcher_pid, :unload_set, :reload_set]
+    defstruct [:throttle_timer, :watcher_pid, :unload_set, :reload_set]
   end
 
   def start_link([]) do
@@ -31,7 +30,6 @@ defmodule DslDashboard.ExampleWatcher.BeamMonitor do
     Logger.debug("ExSync beam monitor started: #{inspect dirs}")
 
     state = %State{
-      finished_reloading_timer: false,
       throttle_timer: nil,
       watcher_pid: watcher_pid,
       unload_set: MapSet.new(),
@@ -43,12 +41,6 @@ defmodule DslDashboard.ExampleWatcher.BeamMonitor do
 
   @impl GenServer
   def handle_info({:file_event, _watcher_pid, {path, events}}, state) do
-    %State{finished_reloading_timer: finished_reloading_timer} = state
-
-    if finished_reloading_timer do
-      Process.cancel_timer(finished_reloading_timer)
-    end
-
     action = action(Path.extname(path), path, events)
 
     state =
@@ -56,10 +48,7 @@ defmodule DslDashboard.ExampleWatcher.BeamMonitor do
       # TODO: Is this correct?
       |> maybe_update_throttle_timer()
 
-    reload_timeout = Config.reload_timeout()
-    timer_ref = Process.send_after(self(), :reload_complete, reload_timeout)
-
-    {:noreply, %{state | finished_reloading_timer: timer_ref}}
+    {:noreply, state}
   end
 
   def handle_info({:file_event, watcher_pid, :stop}, %{watcher_pid: watcher_pid} = state) do
@@ -71,11 +60,6 @@ defmodule DslDashboard.ExampleWatcher.BeamMonitor do
     state = reload_and_unload_modules(state)
     state = %State{state | throttle_timer: nil}
 
-    {:noreply, state}
-  end
-
-  def handle_info(:reload_complete, state) do
-    Logger.debug("reload complete")
     {:noreply, state}
   end
 

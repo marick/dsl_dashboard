@@ -26,6 +26,7 @@ defmodule DslDashboard.ExampleWatcher.Utils do
     file = beam_path |> to_charlist
     {:ok, binary, _} = :erl_prim_loader.get_file(file)
     module = beam_path |> Path.basename(".beam") |> String.to_atom()
+    Logger.debug("load module #{inspect module}")
     :code.load_binary(module, file, binary)
   end
 

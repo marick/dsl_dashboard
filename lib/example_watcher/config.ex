@@ -1,50 +1,66 @@
 require Logger
 
-defmodule DslDashboard.ExampleWatcher.Config do
-  def reload_timeout do
-    Application.get_env(application(), :reload_timeout, 150)
-  end
+defmodule DslDashboard.ExampleWatcher.Config.Macro do
+  alias __MODULE__, as: Here
+  
+  defp application, do: :dsl_dashboard
 
-  def logging_enabled do
-    Application.get_env(application(), :logging_enabled, true)
-  end
+  def get_env(name, default), do: Application.get_env(application(), name, default)
 
-  def reload_callback do
-    Application.get_env(application(), :reload_callback)
-  end
-
-  def load_first do
-    Application.get_env(application(), :load_first, false)
-  end
-
-  def beam_dirs do
-    Application.get_env(application(), :beam_dirs, :not_found)
-  end
-
-  def src_monitor_enabled do
-    case Application.fetch_env(application(), :src_monitor) do
-      :error ->
-        Logger.debug([
-          "Defaulting to enable source monitor, set config :exsync, src_monitor: false",
-          " to disable\n"
-        ])
-
-        true
-
-      {:ok, value} when value in [true, false] ->
-        value
-
-      {:ok, invalid} ->
-        Logger.error([
-          "Value #{inspect(invalid)} not valid for setting :src_monitor, expected",
-          " true or false.  Enabling source monitor."
-        ])
-
-        true
+  def def_required(name_atom) do
+    guid = "c792b687-fe77-446f-abbc-ae912b02a3d8"
+    function_name = {name_atom, [], nil}
+    quote do
+      def unquote(function_name) do
+        case get_env(unquote(name_atom), unquote(guid)) do
+          unquote(guid) ->
+            raise "Missing example watcher config: #{inspect unquote(name_atom)}`"
+          result ->
+            result
+        end
+      end
     end
   end
 
+  def def_optional({name_atom, default}) do
+    function_name = {name_atom, [], nil}
+    quote do
+      def unquote(function_name),
+        do: get_env(unquote(name_atom), unquote(default))
+    end
+  end
+  
+  defmacro values_must_be_provided(names) when is_list(names) do
+    for name <- names, do: Here.def_required(name)
+  end
+
+  defmacro defaults_may_be_overridden(pairs) when is_list(pairs) do
+    for pair <- pairs, do: Here.def_optional(pair)
+  end
+end
+
+defmodule DslDashboard.ExampleWatcher.Config do
+  import DslDashboard.ExampleWatcher.Config.Macro
+
+  defaults_may_be_overridden [
+    reload_timeout: 150,
+    logging_enabled: true,
+    reload_callback: fn _module -> :irrelevant_return_value end ,
+    load_first: false,
+  ]
+  config2 from_config_2
+  config3 :from_config_3
+
+  values_must_be_provided [
+    :beam_dirs, :compile_here
+  ]
+  
+
   def src_dirs do
+    from_config_2() |> IO.inspect
+    from_config_3() |> IO.inspect
+    IO.puts "====++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+    
     Application.get_env(application(), :src_dirs, :not_found)
   end
 
@@ -53,8 +69,4 @@ defmodule DslDashboard.ExampleWatcher.Config do
   end
 
   def src_extensions, do: [".ex"]
-
-  def compile_here do
-    Application.get_env(application(), :compile_here, :not_found)
-  end
 end
