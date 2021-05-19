@@ -1,11 +1,15 @@
-require Logger
-
 defmodule DslDashboard.ExampleWatcher.Config.Macro do
   alias __MODULE__, as: Here
+  require Logger
+  use Pile
   
   defp application, do: :dsl_dashboard
 
-  def get_env(name, default), do: Application.get_env(application(), name, default)
+  def get_env(name, default) do
+    [{_, only}] = Application.get_env(application(), :example_watchers) |> ppp
+    Map.get(only, name, default) |> ppp
+  end
+
 
   def def_required(name_atom) do
     guid = "c792b687-fe77-446f-abbc-ae912b02a3d8"

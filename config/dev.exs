@@ -62,11 +62,19 @@ config :logger, :console,
   level: :debug
 
 
-config :dsl_dashboard, 
-  compile_here: "/Users/bem/src/examples_for_ecto_test_dsl/associations",
-  src_dirs: ["/Users/bem/src/examples_for_ecto_test_dsl/associations/test"],
-  beam_dirs: ["/Users/bem/src/examples_for_ecto_test_dsl/associations/_build/test/lib/app/ebin/"],
-  load_first: true
+demo_config = fn which ->
+  project = "/Users/bem/src/examples_for_ecto_test_dsl/#{which}"
+
+  config = %{compile_here: project, 
+           src_dirs: ["#{project}/test"],
+           beam_dirs: ["#{project}/_build/test/lib/app/ebin/"],
+           load_first: true}
+  {which, config}
+end
+
+config :dsl_dashboard, :example_watchers, [
+  demo_config.("associations")
+]
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.
