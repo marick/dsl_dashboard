@@ -47,22 +47,13 @@ defmodule DslDashboard.ExampleWatcher.Config do
     logging_enabled: true,
     reload_callback: fn _module -> :irrelevant_return_value end ,
     load_first: false,
+    src_dirs: []
   ]
-  config2 from_config_2
-  config3 :from_config_3
 
   values_must_be_provided [
     :beam_dirs, :compile_here
   ]
   
-
-  def src_dirs do
-    from_config_2() |> IO.inspect
-    from_config_3() |> IO.inspect
-    IO.puts "====++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    
-    Application.get_env(application(), :src_dirs, :not_found)
-  end
 
   def application do
     :dsl_dashboard
