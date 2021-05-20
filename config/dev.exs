@@ -73,7 +73,9 @@ demo_config = fn which ->
 end
 
 config :dsl_dashboard, :example_watchers, [
-  demo_config.("associations")
+  projects: Map.new([
+    demo_config.("associations")
+  ])
 ]
 
 # Set a higher stacktrace during development. Avoid configuring such

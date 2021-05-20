@@ -6,8 +6,10 @@ defmodule DslDashboard.ExampleWatcher.Config.Macro do
   defp application, do: :dsl_dashboard
 
   def get_env(name, default) do
-    [{_, only}] = Application.get_env(application(), :example_watchers) |> ppp
-    Map.get(only, name, default) |> ppp
+    Application.get_env(application(), :example_watchers)
+    |> Keyword.get(:projects)
+    |> Map.get("associations")
+    |> Map.get(name, default)
   end
 
 
