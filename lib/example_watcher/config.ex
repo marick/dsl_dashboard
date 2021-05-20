@@ -8,6 +8,7 @@ defmodule DslDashboard.ExampleWatcher.Config.Macro do
   def get_env(name, default) do
     Application.get_env(application(), :example_watchers)
     |> Keyword.get(:projects)
+    |> Map.new
     |> Map.get("associations")
     |> Map.get(name, default)
   end

@@ -17,8 +17,7 @@ defmodule DslDashboard.Application do
       # Start a worker by calling: DslDashboard.Worker.start_link(arg)
       # {DslDashboard.Worker, arg}
       EctoTestDSL.TestDataServer,
-      DslDashboard.ExampleWatcher.SrcMonitor,
-      DslDashboard.ExampleWatcher.BeamMonitor,
+      DslDashboard.ExampleWatcher,
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
