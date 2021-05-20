@@ -29,21 +29,52 @@ end
 
 defmodule DslDashboard.ExampleWatcher.Project do
   import DslDashboard.ExampleWatcher.Project.Macro
+  require Logger
   use Pile
-
-  def constantly(value) do
-    fn _ -> value end
-  end
 
   defaults_may_be_overridden(
     reload_timeout: 150,
     logging_enabled: true,
     reload_callback: constantly(:irrelevant_return_value),
     load_first: false,
-    src_dirs: []
+    src_dirs: [],
+    src_extensions: [".ex"]
   )
 
   values_must_be_provided [
     :beam_dirs, :compile_here
   ]
+
+  def recompile(project) do
+    Logger.debug("running mix compile")
+
+    System.cmd("mix", ["compile"], cd: Project.compile_here(project),
+      stderr_to_stdout: true,
+      env: [{"MIX_ENV", "test"}]
+    )
+    |> log_compile_cmd()
+  end
+
+
+  
+  defp log_compile_cmd({output, status} = result) when is_binary(output) and status > 0 do
+    Logger.error(["error while compiling\n", output])
+    result
+  end
+
+  defp log_compile_cmd({"", _status} = result), do: result
+
+  defp log_compile_cmd({output, _status} = result) when is_binary(output) do
+    message = ["compiling\n", output]
+
+    if String.contains?(output, "warning:") do
+      Logger.warn(message)
+    else
+      Logger.debug(message)
+    end
+
+    result
+  end
+
+  defp constantly(value), do: fn _ -> value end
 end

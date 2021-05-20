@@ -2,7 +2,7 @@ defmodule DslDashboard.ExampleWatcher.BeamMonitor do
   use GenServer
   use Pile
   require Logger
-  alias DslDashboard.ExampleWatcher.{Config,Utils,Project}
+  alias DslDashboard.ExampleWatcher.{Utils,Project}
 
   @throttle_timeout_ms 100
 

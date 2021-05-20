@@ -1,13 +1,13 @@
 defmodule DslDashboard.ExampleWatcher.SrcMonitor do
   use GenServer
   require Logger
-  alias DslDashboard.ExampleWatcher.{Config,Utils,Project}
+  alias DslDashboard.ExampleWatcher.{Utils,Project}
   use Pile
 
   @throttle_timeout_ms 100
 
   defmodule State do
-    defstruct [:throttle_timer, :file_events, :watcher_pid]
+    defstruct [:throttle_timer, :file_events, :watcher_pid, :project]
   end
 
   @impl GenServer
@@ -21,12 +21,14 @@ defmodule DslDashboard.ExampleWatcher.SrcMonitor do
 
     FileSystem.subscribe(watcher_pid)
     Logger.debug("ExSync source monitor started: #{inspect dirs}.")
-    {:ok, %State{watcher_pid: watcher_pid}}
+    {:ok, %State{watcher_pid: watcher_pid, project: project}}
   end
 
   @impl GenServer
-  def handle_info({:file_event, watcher_pid, {path, events}}, %{watcher_pid: watcher_pid} = state) do
-    matching_extension? = Path.extname(path) in Config.src_extensions()
+  def handle_info({:file_event, watcher_pid, {path, events}},
+    %{watcher_pid: watcher_pid, project: project} = state) do
+    
+    matching_extension? = Path.extname(path) in Project.src_extensions(project)
 
     # This varies based on editor and OS - when saving a file in neovim on linux,
     # events received are:
@@ -41,7 +43,7 @@ defmodule DslDashboard.ExampleWatcher.SrcMonitor do
 
     state =
       if matching_extension? && matching_event? do
-        maybe_recomplete(state)
+        maybe_recompile(state)
       else
         state
       end
@@ -55,15 +57,15 @@ defmodule DslDashboard.ExampleWatcher.SrcMonitor do
   end
 
   def handle_info(:throttle_timer_complete, state) do
-    Utils.recomplete()
+    Project.recompile(state.project)
     state = %State{state | throttle_timer: nil}
     {:noreply, state}
   end
 
-  defp maybe_recomplete(%State{throttle_timer: nil} = state) do
+  defp maybe_recompile(%State{throttle_timer: nil} = state) do
     throttle_timer = Process.send_after(self(), :throttle_timer_complete, @throttle_timeout_ms)
     %State{state | throttle_timer: throttle_timer}
   end
 
-  defp maybe_recomplete(%State{} = state), do: state
+  defp maybe_recompile(%State{} = state), do: state
 end
