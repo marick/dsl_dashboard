@@ -43,16 +43,21 @@ defmodule DslDashboard.ExampleWatcher.Config.Macro do
   end
 end
 
+
 defmodule DslDashboard.ExampleWatcher.Config do
   import DslDashboard.ExampleWatcher.Config.Macro
 
-  defaults_may_be_overridden [
+  def constantly(value) do
+    fn _ -> value end
+  end
+
+  defaults_may_be_overridden(
     reload_timeout: 150,
     logging_enabled: true,
-    reload_callback: fn _module -> :irrelevant_return_value end ,
+    reload_callback: constantly(:irrelevant_return_value),
     load_first: false,
     src_dirs: []
-  ]
+  )
 
   values_must_be_provided [
     :beam_dirs, :compile_here
