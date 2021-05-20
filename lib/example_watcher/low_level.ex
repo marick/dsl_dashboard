@@ -1,4 +1,4 @@
-defmodule DslDashboard.ExampleWatcher.Utils do
+defmodule DslDashboard.ExampleWatcher.LowLevel do
   require Logger
   alias DslDashboard.ExampleWatcher.Project
   

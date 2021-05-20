@@ -2,7 +2,7 @@ defmodule DslDashboard.ExampleWatcher.BeamMonitor do
   use GenServer
   use Pile
   require Logger
-  alias DslDashboard.ExampleWatcher.{Utils,Project}
+  alias DslDashboard.ExampleWatcher.{LowLevel,Project}
 
   @throttle_timeout_ms 100
 
@@ -124,20 +124,20 @@ defmodule DslDashboard.ExampleWatcher.BeamMonitor do
 
   defp load_all_beam_files(dirs, project) do
     Logger.debug("Initial load of all beam files.")
-    paths = Utils.all_beam_paths(dirs)
+    paths = LowLevel.all_beam_paths(dirs)
     load_modules(paths, project)
   end  
 
   defp load_modules(reload_set, project) do 
     Enum.each(reload_set, fn module_path ->
-      {:module, module} = Utils.reload(module_path)
+      {:module, module} = LowLevel.reload(module_path)
       Project.reload_callback(project).(module)
     end)
   end
 
   defp unload_modules(unload_set) do 
     Enum.each(unload_set, fn module_path ->
-      Utils.unload(module_path)
+      LowLevel.unload(module_path)
     end)
   end
 end

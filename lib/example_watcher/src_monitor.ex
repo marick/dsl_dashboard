@@ -1,7 +1,7 @@
 defmodule DslDashboard.ExampleWatcher.SrcMonitor do
   use GenServer
   require Logger
-  alias DslDashboard.ExampleWatcher.{Utils,Project}
+  alias DslDashboard.ExampleWatcher.{LowLevel,Project}
   use Pile
 
   @throttle_timeout_ms 100
