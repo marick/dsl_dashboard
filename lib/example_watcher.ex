@@ -11,18 +11,14 @@ defmodule DslDashboard.ExampleWatcher do
 
 
   def start_link([]) do
-    GenServer.start_link(__MODULE__, :no_init_arg)
+    GenServer.start_link(__MODULE__, first_project())
   end
 
 
   @impl GenServer
-  def init(:no_init_arg) do
-    start_with = first_project()
-    Project.compile_here(start_with) |> ppp
-    
-    
-    GenServer.start_link(SrcMonitor, :no_init_arg)
-    GenServer.start_link(BeamMonitor, :no_init_arg)
+  def init(start_with) do
+    GenServer.start_link(SrcMonitor, start_with)
+    GenServer.start_link(BeamMonitor, start_with)
 
     {:ok, :no_state}
   end

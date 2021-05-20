@@ -1,7 +1,8 @@
 defmodule DslDashboard.ExampleWatcher.BeamMonitor do
   use GenServer
+  use Pile
   require Logger
-  alias DslDashboard.ExampleWatcher.{Config,Utils}
+  alias DslDashboard.ExampleWatcher.{Config,Utils,Project}
 
   @throttle_timeout_ms 100
 
@@ -10,21 +11,18 @@ defmodule DslDashboard.ExampleWatcher.BeamMonitor do
       :throttle_timer,
       :watcher_pid,
       :unload_set,
-      :reload_set
+      :reload_set,
+      :project
     ]
-    defstruct [:throttle_timer, :watcher_pid, :unload_set, :reload_set]
-  end
-
-  def start_link([]) do
-    GenServer.start_link(__MODULE__, :no_init_arg)
+    defstruct [:throttle_timer, :watcher_pid, :unload_set, :reload_set, :project]
   end
 
   @impl GenServer
-  def init(:no_init_arg) do
-    dirs = Config.beam_dirs()
+  def init(project) do
+    dirs = Project.beam_dirs(project)
     {:ok, watcher_pid} = FileSystem.start_link(dirs: dirs)
 
-    if Config.load_first, do: load_all_beam_files(dirs)
+    if Project.load_first(project), do: load_all_beam_files(dirs, project)
     
     FileSystem.subscribe(watcher_pid)
     Logger.debug("ExSync beam monitor started: #{inspect dirs}")
@@ -33,7 +31,8 @@ defmodule DslDashboard.ExampleWatcher.BeamMonitor do
       throttle_timer: nil,
       watcher_pid: watcher_pid,
       unload_set: MapSet.new(),
-      reload_set: MapSet.new()
+      reload_set: MapSet.new(),
+      project: project
     }
 
     {:ok, state}
@@ -117,21 +116,22 @@ defmodule DslDashboard.ExampleWatcher.BeamMonitor do
   defp reload_and_unload_modules(%State{} = state) do
     %State{reload_set: reload_set, unload_set: unload_set} = state
 
-    load_modules(reload_set)
+    load_modules(reload_set, state.project)
     unload_modules(unload_set)
 
     %State{state | reload_set: MapSet.new(), unload_set: MapSet.new()}
   end
 
-  defp load_all_beam_files(dirs) do
+  defp load_all_beam_files(dirs, project) do
     Logger.debug("Initial load of all beam files.")
-    Utils.all_beam_paths(dirs) |> load_modules
+    paths = Utils.all_beam_paths(dirs)
+    load_modules(paths, project)
   end  
 
-  defp load_modules(reload_set) do 
+  defp load_modules(reload_set, project) do 
     Enum.each(reload_set, fn module_path ->
       {:module, module} = Utils.reload(module_path)
-      Config.reload_callback.(module)
+      Project.reload_callback(project).(module)
     end)
   end
 

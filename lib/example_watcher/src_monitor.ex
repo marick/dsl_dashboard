@@ -1,7 +1,7 @@
 defmodule DslDashboard.ExampleWatcher.SrcMonitor do
   use GenServer
   require Logger
-  alias DslDashboard.ExampleWatcher.{Config,Utils}
+  alias DslDashboard.ExampleWatcher.{Config,Utils,Project}
   use Pile
 
   @throttle_timeout_ms 100
@@ -10,13 +10,9 @@ defmodule DslDashboard.ExampleWatcher.SrcMonitor do
     defstruct [:throttle_timer, :file_events, :watcher_pid]
   end
 
-  def start_link([]) do
-    GenServer.start_link(__MODULE__, :no_init_arg)
-  end
-
   @impl GenServer
-  def init(:no_init_arg) do
-    dirs = Config.src_dirs()
+  def init(project) do
+    dirs = Project.beam_dirs(project)
     {:ok, watcher_pid} =
       FileSystem.start_link(
         dirs: dirs,
